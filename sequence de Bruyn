@@ -1,0 +1,245 @@
+#include <iostream>
+#include <vector>
+#include <stack>
+
+using namespace std;
+
+vector<vector<int> > components;
+
+int N,K;
+int X[100];
+int counter3 = 0;
+
+vector<vector<int> > permutations(0);
+vector<int> permutations2();
+
+void Generate(int k, int arr[])
+   {
+      if(k==K)
+          {
+              int temp = 0;
+              permutations.push_back(vector<int>());
+
+              for(int i=0;i<K;i++)
+               {
+                  permutations[counter3].push_back(X[i]);
+
+                  if(K-i==1 )
+                      {
+                         temp+=X[i];
+                      }
+
+                  else
+                    {
+                         temp+=X[i]*10*(K-i-1);
+                     }
+              }
+
+             arr[counter3] = temp;
+             counter3++;
+         }
+
+    else
+      {
+         for(int j=0;j<N;j++)
+          {
+              X[k]=j+1;
+              Generate(k+1,arr);
+         }
+      }
+   }
+
+void create_adjacency_matrix(int n, int m, int **arr2, int ten, int arr[])
+  {
+     for(int i =0; i < m; i++)
+      {
+          for(int j = 0; j < m; j++)
+           {
+              arr2[i][j] = 0;
+           }
+     }
+
+      for(int i = 0; i < m; i++)
+       {
+            for(int j = 0; j < m; j++)
+             {
+                if(arr[i]%ten == (arr[j]/10))
+                   {
+                       arr2[i][j]++;
+                   }
+             }
+      }
+  }
+
+bool Is_Euler(vector<vector<int> >& adj_list,int n, int **arr)
+  {
+     if(components.size() > 1)
+      {
+        return false;
+      }
+      
+    int counter = 0;
+    int counter2 = 0;
+    
+    for(int i = 0; i < n; i++)
+     {
+        for(int j = 0; j < n; j++)
+         {
+            if(arr[i][j] == 1)
+             {
+                 counter2++;
+             }
+         }
+
+        if(counter2%2==1)
+         {
+             counter++;
+             counter2 = 0;
+         }
+     }
+
+    if(counter > 2)
+     {
+         return false;
+     }
+
+    return true;
+  }
+
+void DFS(int **arr, int n, int start, bool used[])
+  {
+     used[start] = 1;
+     components.back().push_back(start);
+     
+     for(int i = 1; i < n; i++)
+      {
+         if(arr[start][i] && !used[i])
+          {
+            DFS(arr,n,i,used);
+         }
+     }
+
+  }
+
+void Find_path(vector<vector<int> >& adj_list,int n, int **arr,int arr2[])
+  {
+     int v = 0;
+     int counter = 0;
+     int counter2 = 0;
+     
+     for(int i = 0; i < n; i++)
+      {
+         for(int j = 0; j < n; j++)
+          {
+              if(arr[i][j] == 1)
+               {
+                   counter2++;
+               }
+          }
+
+         if(counter2%2==1)
+          {
+             v = i;
+             break;
+         }
+
+     }
+
+    for(unsigned int i = 0; i < adj_list.size(); i++)
+     {
+         if(adj_list[i].size()%2 == 1)
+          {
+              v = i;
+              break;
+         }
+     }
+
+    stack<int> _stack;
+    _stack.push(v);
+    
+    while(!_stack.empty())
+     {
+         int p = _stack.top();
+
+         for(int i = 0; i < n; i++)
+          {
+             if(arr[p][i] == 1)
+              {
+                  _stack.push(i);
+                  arr[p][i]--;
+                  
+                  break;
+             }
+         }
+
+        if(p == _stack.top())
+         {
+             _stack.pop();           
+             if(!_stack.empty())
+              {
+                  cout << arr2[p]%10;
+              }
+         }
+     }
+  }
+
+
+
+int main()
+  {
+     int NumberOfVerticies = 1;
+     int NumberOfRibs;
+     int ten = 1;
+
+     cin >> N;
+     cin >> K;
+     
+     K--;
+
+     for(int i = 0; i < K; i++)
+      {
+          NumberOfVerticies = NumberOfVerticies*N;
+          
+          if(i!=0)
+           {
+              ten = ten*10;
+           }
+      }
+
+     int arr[NumberOfVerticies];
+    
+     Generate(0,arr);
+
+     vector<vector<int> > AdjacencyList(NumberOfVerticies);
+ 
+     int **AdjacencyMatrix = new int*[NumberOfVerticies];
+
+     for(int i = 0; i < NumberOfVerticies; i++)
+      {
+          AdjacencyMatrix[i] = new int[NumberOfVerticies];
+      }
+
+     create_adjacency_matrix(NumberOfRibs, NumberOfVerticies, AdjacencyMatrix,ten, arr);
+
+     bool used[NumberOfVerticies];
+
+     for(int i = 0; i < NumberOfVerticies; i++)
+      {
+         used[i] = 0;
+      }
+
+    for(int i = 0; i < NumberOfVerticies; i++)
+     {
+         if(!used[i])
+          {
+              components.push_back(vector<int>());
+              DFS(AdjacencyMatrix, NumberOfVerticies, i, used);
+          }
+     }
+
+     for (int i = 0; i < NumberOfVerticies; i++)
+      {
+          delete[] AdjacencyMatrix[i];
+      }
+    return 0;
+}
